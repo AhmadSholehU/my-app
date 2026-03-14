@@ -81,25 +81,30 @@
 <script setup>
 import { ref, computed } from 'vue'
 
+// 1. Panggil plugin API yang sudah kita inject
+const { $api } = useNuxtApp()
+
 // State untuk Input Pencarian dan Filter Aktif
 const searchQuery = ref('')
 const activeFilter = ref('Semua')
 const filters = ['Semua', 'Bintang 5', 'Promo', 'Kolam Renang', 'Termurah']
 
-// Data Dummy Hotel (Biasanya dari API Golang)
-const allHotels = ref([
-  { id: 1, name: 'Grand Hyatt Jakarta', location: 'Thamrin, Jakarta', price: 2500000, rating: 4.8, hasPool: true, isPromo: false, image: 'https://images.unsplash.com/photo-1445019980597-93fa8acb246c?q=80&w=874&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' },
-  { id: 2, name: 'The Langham', location: 'SCBD, Jakarta', price: 3200000, rating: 4.9, hasPool: true, isPromo: true, image: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' },
-  { id: 3, name: 'Artotel Thamrin', location: 'Menteng, Jakarta', price: 800000, rating: 4.4, hasPool: false, isPromo: true, image: 'https://images.unsplash.com/photo-1455587734955-081b22074882?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' },
-  { id: 4, name: 'Ritz-Carlton Mega Kuningan', location: 'Kuningan, Jakarta', price: 2900000, rating: 4.9, hasPool: true, isPromo: false, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=500&q=80' },
-  { id: 5, name: 'Ibis Styles', location: 'Tanah Abang, Jakarta', price: 550000, rating: 4.2, hasPool: false, isPromo: false, image: 'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=500&q=80' }
-])
+// 2. Ambil data dari Golang menggunakan useAsyncData dan Repository Pattern
+const { data: apiResponse, pending, error } = await useAsyncData(
+  'hotels-list', 
+  () => $api.hotel.getHotels()
+)
 
-// Computed Property: Secara reaktif menyaring data berdasarkan input dan filter
+// 3. Ekstrak array data dari response JSON Golang. 
+// (Karena format Go kita: { message: "success", data: [...] })
+const allHotels = computed(() => {
+  return apiResponse.value?.data || []
+})
+
+// 4. Computed Property untuk filter (Sama persis seperti sebelumnya)
 const filteredHotels = computed(() => {
   let result = allHotels.value
 
-  // 1. Filter berdasarkan pencarian teks
   if (searchQuery.value) {
     const q = searchQuery.value.toLowerCase()
     result = result.filter(hotel => 
@@ -108,7 +113,6 @@ const filteredHotels = computed(() => {
     )
   }
 
-  // 2. Filter berdasarkan kategori chip
   if (activeFilter.value === 'Bintang 5') {
     result = result.filter(hotel => hotel.rating >= 4.8)
   } else if (activeFilter.value === 'Promo') {
@@ -116,7 +120,6 @@ const filteredHotels = computed(() => {
   } else if (activeFilter.value === 'Kolam Renang') {
     result = result.filter(hotel => hotel.hasPool)
   } else if (activeFilter.value === 'Termurah') {
-    // Menyalin array lalu mengurutkan dari harga termurah
     result = [...result].sort((a, b) => a.price - b.price)
   }
 
