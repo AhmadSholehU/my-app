@@ -46,11 +46,14 @@
       </div>
 
       <div v-else class="flex flex-col gap-4">
-        <div 
+        <NuxtLink 
           v-for="hotel in filteredHotels" 
           :key="hotel.id" 
+          :to="`/hotel/${hotel.id}`"
           class="bg-white rounded-xl shadow-sm border border-gray-100 flex overflow-hidden h-32"
         >
+    
+ 
           <img :src="hotel.image" :alt="hotel.name" class="w-1/3 object-cover" />
           <div class="p-3 w-2/3 flex flex-col justify-between">
             <div>
@@ -72,10 +75,11 @@
               <span class="text-blue-600 font-bold text-sm">Rp {{ formatPrice(hotel.price) }}</span>
             </div>
           </div>
+           </NuxtLink>
         </div>
       </div>
     </div>
-  </div>
+
 </template>
 
 <script setup>

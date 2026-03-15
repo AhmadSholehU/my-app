@@ -25,6 +25,10 @@ export default class HotelModule extends FetchFactory {
     return this.call<HotelResponse>('GET', '/hotels')
   }
 
+  async getHotelById(id: string | number): Promise<{ message: string, data: HotelData }> {
+  return this.call('GET', `/hotels/${id}`)
+}
+
   // Contoh jika nanti ada fitur detail hotel:
   // async getHotelById(id: number) { ... }
 }

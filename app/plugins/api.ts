@@ -1,6 +1,8 @@
 // app/plugins/api.ts
 import { $fetch } from 'ofetch'
 import HotelModule from '~/repositories/modules/hotel'
+import OrderModule from '~/repositories/modules/order'
+import UserModule from '~/repositories/modules/user'
 
 export default defineNuxtPlugin((nuxtApp) => {
   // 1. Konfigurasi Base URL yang mengarah ke server Golang Anda
@@ -17,7 +19,9 @@ export default defineNuxtPlugin((nuxtApp) => {
 
   // 2. Inisialisasi modul-modul repositori Anda
   const modules = {
-    hotel: new HotelModule(apiFetcher)
+    hotel: new HotelModule(apiFetcher),
+    order: new OrderModule(apiFetcher),
+    user: new UserModule(apiFetcher)
     // auth: new AuthModule(apiFetcher), <- contoh jika ada modul lain
     // payment: new PaymentModule(apiFetcher)
   }

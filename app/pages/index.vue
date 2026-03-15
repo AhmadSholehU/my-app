@@ -41,11 +41,13 @@
       <div v-if="pending" class="text-center text-gray-500 py-4">Memuat data hotel...</div>
       
       <div v-else class="flex gap-4 overflow-x-auto pb-4 hide-scrollbar">
-        <div 
-          v-for="hotel in hotels" 
-          :key="hotel.id" 
-          class="min-w-[200px] bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex-shrink-0"
-        >
+        <NuxtLink 
+  v-for="hotel in hotels" 
+  :key="hotel.id" 
+  :to="`/hotel/${hotel.id}`"
+  class="min-w-[200px] bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex-shrink-0 block"
+>
+  
           <img :src="hotel.image" :alt="hotel.name" class="h-32 w-full object-cover" />
           <div class="p-3">
             <h3 class="font-semibold text-sm truncate">{{ hotel.name }}</h3>
@@ -60,34 +62,27 @@
               </span>
             </div>
           </div>
+          </NuxtLink>
         </div>
+        
       </div>
     </div>
-  </div>
+  
 </template>
 
 <script setup>
+import { computed } from 'vue'
 
-const { data: hotels, pending } = await useAsyncData('hotels', () => {
-  return Promise.resolve([
-    {
-      id: 1,
-      name: 'Grand Hyatt Jakarta',
-      location: 'Thamrin, Jakarta',
-      price: 2500000,
-      rating: 4.8,
-      image: 'https://images.unsplash.com/photo-1771926927841-1a81a1094b81?q=80&w=435&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
-    },
-    {
-      id: 2,
-      name: 'The Langham',
-      location: 'SCBD, Jakarta',
-      price: 3200000,
-      rating: 4.9,
-      image: 'https://images.unsplash.com/photo-1769745402932-4c93d9e76d98?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
-    }
-  ])
-})
+const { $api } = useNuxtApp()
+
+// Mengambil data hotel untuk rekomendasi beranda
+const { data: apiResponse, pending } = await useAsyncData(
+  'popular-hotels', 
+  () => $api.hotel.getHotels()
+)
+
+// Ekstrak data
+const hotels = computed(() => apiResponse.value?.data || [])
 
 const formatPrice = (price) => {
   return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")

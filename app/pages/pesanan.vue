@@ -87,62 +87,29 @@
 <script setup>
 import { ref, computed } from 'vue'
 
-// Definisi Tab
+const { $api } = useNuxtApp()
+
 const tabs = [
   { id: 'aktif', label: 'Aktif' },
   { id: 'selesai', label: 'Selesai' },
   { id: 'batal', label: 'Dibatalkan' }
 ]
-
-// State Tab Aktif (Default: 'aktif')
 const activeTab = ref('aktif')
 
-// Data Dummy Pesanan (Nantinya didapat dari Golang/Database)
-const allOrders = ref([
-  {
-    id: 'TRX-99281A',
-    hotelName: 'Grand Hyatt Jakarta',
-    hotelImage: 'https://images.unsplash.com/photo-1445019980597-93fa8acb246c?q=80&w=874&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    checkIn: '2024-10-12',
-    checkOut: '2024-10-14',
-    roomType: 'Deluxe Room',
-    guests: 2,
-    totalPrice: 5000000,
-    status: 'Aktif' // Aktif, Selesai, Batal
-  },
-  {
-    id: 'TRX-77342B',
-    hotelName: 'Ibis Styles Tanah Abang',
-    hotelImage: 'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=200&q=80',
-    checkIn: '2024-08-01',
-    checkOut: '2024-08-03',
-    roomType: 'Standard Room',
-    guests: 1,
-    totalPrice: 1100000,
-    status: 'Selesai'
-  },
-  {
-    id: 'TRX-11923C',
-    hotelName: 'The Langham',
-    hotelImage: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    checkIn: '2024-09-15',
-    checkOut: '2024-09-16',
-    roomType: 'Executive Suite',
-    guests: 2,
-    totalPrice: 3200000,
-    status: 'Batal'
-  }
-])
+// Ambil data pesanan dari API
+const { data: apiResponse, pending } = await useAsyncData(
+  'my-orders',
+  () => $api.order.getMyOrders()
+)
 
-// Filter data pesanan berdasarkan tab yang sedang diklik
+// Computed Property untuk memfilter data aktual dari API
 const filteredOrders = computed(() => {
-  if (activeTab.value === 'aktif') {
-    return allOrders.value.filter(order => order.status === 'Aktif')
-  } else if (activeTab.value === 'selesai') {
-    return allOrders.value.filter(order => order.status === 'Selesai')
-  } else if (activeTab.value === 'batal') {
-    return allOrders.value.filter(order => order.status === 'Batal')
-  }
+  const orders = apiResponse.value?.data || []
+  
+  if (activeTab.value === 'aktif') return orders.filter(o => o.status === 'Aktif')
+  if (activeTab.value === 'selesai') return orders.filter(o => o.status === 'Selesai')
+  if (activeTab.value === 'batal') return orders.filter(o => o.status === 'Batal')
+  
   return []
 })
 
